@@ -28,13 +28,13 @@ DWORD WINAPI calculateIntegral(void* arg) {
 	return 0;
 }
 
-double calculateIntegralUsingThreads(const int from, const int to, const int polynomialDegree, const int threads) {
+double calculateIntegralUsingThreads(const double from, const double to, const double polynomialDegree, const int threads) {
 	double start = 0;
 	double *result = &start;
 
 	for (int i = 0; i < threads; i++) {
-		double partialFrom = from + i * (to / threads);
-		double partialTo = from + (i + 1) * (to / threads);
+		double partialFrom = from + i * double (to / threads);
+		double partialTo = from + (i + 1) *  (to / threads);
 		integralArguments arguments = { partialFrom, partialTo, polynomialDegree, *result};
 
 		if (HANDLE hThread = CreateThread(NULL, 0, calculateIntegral, (void*)&arguments, 0, NULL)) {

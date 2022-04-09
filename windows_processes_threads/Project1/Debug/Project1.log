@@ -1,2 +1,4 @@
 ﻿  main.cpp
+D:\workspaces\distributed-processing-lab\windows_processes_threads\Project1\main.cpp(38,59): warning C4838: conversion from 'const double' to 'int' requires a narrowing conversion
+D:\workspaces\distributed-processing-lab\windows_processes_threads\Project1\main.cpp(38,59): warning C4244: 'initializing': conversion from 'const double' to 'int', possible loss of data
   Project1.vcxproj -> D:\workspaces\distributed-processing-lab\windows_processes_threads\Debug\Project1.exe
