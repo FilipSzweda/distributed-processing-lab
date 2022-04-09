@@ -1,3 +1,2 @@
 ﻿  main.cpp
-C:\Users\filip\Desktop\Project1\Project1\main.cpp(5,9): warning C4068: unknown pragma 'argsused'
-  Project1.vcxproj -> C:\Users\filip\Desktop\Project1\Debug\Project1.exe
+  Project1.vcxproj -> D:\workspaces\distributed-processing-lab\windows_processes_threads\Debug\Project1.exe
