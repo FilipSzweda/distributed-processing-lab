@@ -9,40 +9,41 @@ double integral;
 struct integralArguments {
 	double from;
 	double to;
-	int steps;
+	int polynomialDegree;
+	double& result;
 };
 
 DWORD WINAPI calculateIntegral(void* arg) {
 	integralArguments* arguments = (struct integralArguments*)arg;
-	double step = (arguments->to - arguments->from) / arguments->steps;
+	int steps = 100;
+	double step = (arguments->to - arguments->from) / steps;
 	double area = 0.0;
 
-	for (int i = 0; i < arguments->steps; i++) {
-		area += exp(cos(arguments->from + (i + 0.5) * step)) * step;
+	for (int i = 0; i < steps; i++) {
+		area += pow(arguments->from + (i + 0.5) * step, arguments->polynomialDegree) * step;
 	}
 
-	integral = area;
+	arguments->result += area;
 
 	return 0;
 }
 
 double calculateIntegralUsingThreads(const int from, const int to, const int polynomialDegree, const int threads) {
-	double result = 0;
+	double start = 0;
+	double *result = &start;
 
 	for (int i = 0; i < threads; i++) {
 		double partialFrom = from + i * (to / threads);
 		double partialTo = from + (i + 1) * (to / threads);
-		integralArguments arguments = { partialFrom, partialTo, 100};
+		integralArguments arguments = { partialFrom, partialTo, polynomialDegree, *result};
 
 		if (HANDLE hThread = CreateThread(NULL, 0, calculateIntegral, (void*)&arguments, 0, NULL)) {
 			WaitForSingleObject(hThread, INFINITE);
 			CloseHandle(hThread);
 		}
-
-		result += integral;
 	}
 
-	return result;
+	return *result;
 }
 
 int main() {
