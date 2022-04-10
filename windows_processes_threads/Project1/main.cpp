@@ -3,21 +3,23 @@
 #include <iostream>
 #include "atlstr.h"
 #include "cmath"
+#include <chrono>
+using namespace std::chrono;
 
 struct integralArguments {
 	double from;
 	double to;
 	int polynomialDegree;
+	int steps;
 	double* result;
 };
 
 DWORD WINAPI calculateIntegral(void* arg) {
 	integralArguments* arguments = (struct integralArguments*)arg;
-	int steps = 100;
-	double step = (arguments->to - arguments->from) / steps;
+	double step = (arguments->to - arguments->from) / arguments->steps;
 	double area = 0.0;
 
-	for (int i = 0; i < steps; i++) {
+	for (int i = 0; i < arguments->steps; i++) {
 		area += pow(arguments->from + (i + 0.5) * step, arguments->polynomialDegree) * step;
 	}
 
@@ -35,6 +37,7 @@ double calculateIntegralUsingThreads(const double from, const double to, const d
 		arguments[i].from = from + i * double(to / threads);;
 		arguments[i].to = from + (i + 1) * (to / threads);
 		arguments[i].polynomialDegree = polynomialDegree;
+		arguments[i].steps = 500 / threads;
 		arguments[i].result = &result;
 		hThreads[i] = CreateThread(NULL, 0, &calculateIntegral, (void*)&arguments[i], 0, NULL);
 	}
@@ -51,11 +54,9 @@ double calculateIntegralUsingThreads(const double from, const double to, const d
 int main() {
 	bool exit = false;
 	while (!exit) {
-		std::cout <<	"1 - open Notepad\n";
-		std::cout <<	"2 - calulcate following integrals (you can choose any other in-code):\n"
-						"\tfrom: 0, to: 5, polynomial degree: 3 (on 2 threads)\n"
-						"\tfrom: 0, to: 5, polynomial degree: 3 (on 4 threads)\n";
-		std::cout <<	"3 - exit\n";
+		std::cout << "1 - open Notepad\n";
+		std::cout << "2 - calulcate integral chosen in-code on 1-10 threads\n";
+		std::cout << "3 - exit\n";
 
 		int option;
 		std::cin >> option;
@@ -75,11 +76,32 @@ int main() {
 			}
 		}
 		else if (option == 2) {
-			double results[2] = {
-				calculateIntegralUsingThreads(0, 5, 3, 2),
-				calculateIntegralUsingThreads(0, 5, 3, 4)
-			};
-			std::cout << "First result: " << results[0] << ", second result: " << results[1] << std::endl;
+			int threadsNumbers[10];
+			int durrations[10];
+			double result;
+			for (int i = 0; i < 10; i++) {
+				int threadsNumber = i + 1;
+
+				auto start = high_resolution_clock::now();
+				result = calculateIntegralUsingThreads(0, 5, 3, threadsNumber);
+				auto stop = high_resolution_clock::now();
+
+				auto duration = duration_cast<microseconds>(stop - start);
+
+				durrations[i] = duration.count();
+				threadsNumbers[i] = threadsNumber;
+			}
+
+			printf("Result: %f\n", result);
+			printf("Threads number: \t");
+			for (int i = 0; i < 10; i++) {
+				printf("%d\t", threadsNumbers[i]);
+			}
+			printf("\nTime:\t\t\t");
+			for (int i = 0; i < 10; i++) {
+				printf("%d\t", durrations[i]);
+			}
+			printf("\n\n");
 		}
 		else if (option == 3) {
 			exit = true;
