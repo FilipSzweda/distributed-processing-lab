@@ -55,7 +55,7 @@ int main() {
 	bool exit = false;
 	while (!exit) {
 		std::cout << "1 - open Notepad\n";
-		std::cout << "2 - calulcate integral chosen in-code on 1-10 threads\n";
+		std::cout << "2 - calculate integral chosen in-code on 1-10 threads\n";
 		std::cout << "3 - exit\n";
 
 		int option;
@@ -76,14 +76,16 @@ int main() {
 			}
 		}
 		else if (option == 2) {
+			printf("Integral from 0 to 5 of x^3\n");
+			printf("Result for 4 threads: %f\n\n", calculateIntegralUsingThreads(0, 5, 3, 4));
+
 			int threadsNumbers[10];
 			int durrations[10];
-			double result;
 			for (int i = 0; i < 10; i++) {
 				int threadsNumber = i + 1;
 
 				auto start = high_resolution_clock::now();
-				result = calculateIntegralUsingThreads(0, 5, 3, threadsNumber);
+				calculateIntegralUsingThreads(0, 5, 3, threadsNumber);
 				auto stop = high_resolution_clock::now();
 
 				auto duration = duration_cast<microseconds>(stop - start);
@@ -92,7 +94,6 @@ int main() {
 				threadsNumbers[i] = threadsNumber;
 			}
 
-			printf("Result: %f\n", result);
 			printf("Threads number: \t");
 			for (int i = 0; i < 10; i++) {
 				printf("%d\t", threadsNumbers[i]);
