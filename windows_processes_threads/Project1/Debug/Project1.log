@@ -1,8 +1,9 @@
 ﻿  main.cpp
 D:\workspaces\distributed-processing-lab\windows_processes_threads\Project1\main.cpp(39,35): warning C4244: '=': conversion from 'const double' to 'int', possible loss of data
-D:\workspaces\distributed-processing-lab\windows_processes_threads\Project1\main.cpp(93,35): warning C4244: '=': conversion from '_Rep' to 'int', possible loss of data
+D:\workspaces\distributed-processing-lab\windows_processes_threads\Project1\main.cpp(95,35): warning C4244: '=': conversion from '_Rep' to 'int', possible loss of data
           with
           [
               _Rep=__int64
           ]
+  LINK : D:\workspaces\distributed-processing-lab\windows_processes_threads\Debug\Project1.exe not found or not built by the last incremental link; performing full link
   Project1.vcxproj -> D:\workspaces\distributed-processing-lab\windows_processes_threads\Debug\Project1.exe

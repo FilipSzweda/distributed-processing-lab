@@ -48,6 +48,9 @@ double calculateIntegralUsingThreads(const double from, const double to, const d
 		CloseHandle(hThreads[i]);
 	}
 
+	free(hThreads);
+	free(arguments);
+
 	return result;
 }
 
