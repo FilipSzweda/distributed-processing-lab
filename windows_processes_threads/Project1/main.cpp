@@ -4,13 +4,11 @@
 #include "atlstr.h"
 #include "cmath"
 
-double integral;
-
 struct integralArguments {
 	double from;
 	double to;
 	int polynomialDegree;
-	double& result;
+	double* result;
 };
 
 DWORD WINAPI calculateIntegral(void* arg) {
@@ -23,38 +21,41 @@ DWORD WINAPI calculateIntegral(void* arg) {
 		area += pow(arguments->from + (i + 0.5) * step, arguments->polynomialDegree) * step;
 	}
 
-	arguments->result += area;
+	*(arguments->result) += area;
 
 	return 0;
 }
 
 double calculateIntegralUsingThreads(const double from, const double to, const double polynomialDegree, const int threads) {
-	double start = 0;
-	double *result = &start;
+	double result = 0;
+	HANDLE* hThreads = (HANDLE*)malloc(threads * sizeof(HANDLE));
+	integralArguments* arguments = (integralArguments*)malloc(threads * sizeof(integralArguments));
 
 	for (int i = 0; i < threads; i++) {
-		double partialFrom = from + i * double (to / threads);
-		double partialTo = from + (i + 1) *  (to / threads);
-		integralArguments arguments = { partialFrom, partialTo, polynomialDegree, *result};
-
-		if (HANDLE hThread = CreateThread(NULL, 0, calculateIntegral, (void*)&arguments, 0, NULL)) {
-			WaitForSingleObject(hThread, INFINITE);
-			CloseHandle(hThread);
-		}
+		arguments[i].from = from + i * double(to / threads);;
+		arguments[i].to = from + (i + 1) * (to / threads);
+		arguments[i].polynomialDegree = polynomialDegree;
+		arguments[i].result = &result;
+		hThreads[i] = CreateThread(NULL, 0, &calculateIntegral, (void*)&arguments[i], 0, NULL);
 	}
 
-	return *result;
+	WaitForMultipleObjects(threads, hThreads, true, INFINITE);
+
+	for (int i = 0; i < threads; i++) {
+		CloseHandle(hThreads[i]);
+	}
+
+	return result;
 }
 
 int main() {
 	bool exit = false;
 	while (!exit) {
-		std::cout << "1 - open Notepad\n";
-		std::cout << R"(2 - calulcate following integrals (you can choose any other in-code):
-	from: 0, to: 5, polynomial degree: 3 (on 2 threads)
-	from: 0, to: 5, polynomial degree: 3 (on 4 threads)
-)";
-		std::cout << "3 - exit\n";
+		std::cout <<	"1 - open Notepad\n";
+		std::cout <<	"2 - calulcate following integrals (you can choose any other in-code):\n"
+						"\tfrom: 0, to: 5, polynomial degree: 3 (on 2 threads)\n"
+						"\tfrom: 0, to: 5, polynomial degree: 3 (on 4 threads)\n";
+		std::cout <<	"3 - exit\n";
 
 		int option;
 		std::cin >> option;
