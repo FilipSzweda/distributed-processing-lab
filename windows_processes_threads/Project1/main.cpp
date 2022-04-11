@@ -37,7 +37,7 @@ double calculateIntegralUsingThreads(const double from, const double to, const d
 		arguments[i].from = from + i * double(to / threads);;
 		arguments[i].to = from + (i + 1) * (to / threads);
 		arguments[i].polynomialDegree = polynomialDegree;
-		arguments[i].steps = 500 / threads;
+		arguments[i].steps = 100000 / threads;
 		arguments[i].result = &result;
 		hThreads[i] = CreateThread(NULL, 0, &calculateIntegral, (void*)&arguments[i], 0, NULL);
 	}
