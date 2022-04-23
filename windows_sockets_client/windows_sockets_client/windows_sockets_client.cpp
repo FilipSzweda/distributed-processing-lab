@@ -16,6 +16,15 @@
 
 std::mutex mtx;
 
+void receive_message(SOCKET* connectSocket, std::string userNumber) {
+    while (true) {
+        char bufferb[80];
+        if (recv(*connectSocket, bufferb, 80, 0) > 0) {
+            std::cout << "[User number: " << userNumber << "] Received message: " << bufferb << "\n";
+        };
+    }
+}
+
 void create_client(std::string userNumber) {
     WSADATA wsas;
     WORD version;
@@ -39,16 +48,8 @@ void create_client(std::string userNumber) {
     std::string buffer;
     std::string message;
     std::string receiverNumber;
+    std::thread message_receiver { receive_message, &connectSocket, userNumber };
     while (true) {
-        // DWORD recvCount = 0;
-        // ioctlsocket(connectSocket, FIONREAD, &recvCount);
-        unsigned long iMode = 1;
-        ioctlsocket(connectSocket, FIONBIO, &iMode);
-        char bufferb[80];
-        if (recv(connectSocket, bufferb, 80, 0) > 0) { // recvCount > 0 && 
-            std::cout << "[User number: " << userNumber << "] Received message:" << bufferb << "\n";
-        };
-
         mtx.lock();
         std::cout << "[User number: " << userNumber << "] Message:\n";
         std::cin >> message;
@@ -59,6 +60,7 @@ void create_client(std::string userNumber) {
         buffer = userNumber + receiverNumber + message;
         send(connectSocket, buffer.c_str(), buffer.length() + 1, 0);
     }
+    message_receiver.join();
 
     closesocket(connectSocket);
     WSACleanup();
