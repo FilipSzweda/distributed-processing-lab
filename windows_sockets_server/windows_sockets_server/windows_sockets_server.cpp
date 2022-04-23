@@ -25,23 +25,30 @@ int main() {
     result = bind(s, (struct sockaddr FAR*) & sa, sizeof(sa));
     result = listen(s, 5);
 
-    SOCKET si;
+    SOCKET si[2];
     struct sockaddr_in sc;
     int lenc;
     while(true) {
         lenc = sizeof(sc);
-        si = accept(s, (struct sockaddr FAR*) & sc, &lenc);
-
-        char buf[80];
-        while (recv(si, buf, 80, 0) > 0) {
-            if (strcmp(buf, "KONIEC") == 0)
-            {
-                closesocket(si);
-                WSACleanup();
-                return 0;
+        for (int i = 0; i < 2; i++) {
+            si[i] = accept(s, (struct sockaddr FAR*) & sc, &lenc);
+        }
+        
+        while (true) {
+            for (int i = 0; i < 2; i++) {
+                char buf[80];
+                if (recv(si[i], buf, 80, 0) > 0) {
+                    if (strcmp(buf, "quit") == 0) {
+                        closesocket(si[i]);
+                        WSACleanup();
+                        return 0;
+                    }
+                    printf("%s\n", buf);
+                };
             }
-            printf("\n % s ", buf);
-        };
+        }
+
+        
     }
 
     return 0;
