@@ -24,7 +24,7 @@ void create_client(std::string userNumber) {
         std::cout << "Winsock loading error\n";
     }
 
-    SOCKET clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    SOCKET connectSocket = socket(AF_INET, SOCK_STREAM, 0);
 
     struct sockaddr_in clientAddress;
     memset((void*)(&clientAddress), 0, sizeof(clientAddress));
@@ -32,7 +32,7 @@ void create_client(std::string userNumber) {
     clientAddress.sin_port = htons(ST_PORT);
     clientAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    if (int result = connect(clientSocket, (struct sockaddr FAR*) & clientAddress, sizeof(clientAddress)) == SOCKET_ERROR) {
+    if (int result = connect(connectSocket, (struct sockaddr FAR*) &clientAddress, sizeof(clientAddress)) == SOCKET_ERROR) {
         std::cout << "Connection error\n";
     }
     
@@ -40,18 +40,27 @@ void create_client(std::string userNumber) {
     std::string message;
     std::string receiverNumber;
     while (true) {
+        // DWORD recvCount = 0;
+        // ioctlsocket(connectSocket, FIONREAD, &recvCount);
+        unsigned long iMode = 1;
+        ioctlsocket(connectSocket, FIONBIO, &iMode);
+        char bufferb[80];
+        if (recv(connectSocket, bufferb, 80, 0) > 0) { // recvCount > 0 && 
+            std::cout << "[User number: " << userNumber << "] Received message:" << bufferb << "\n";
+        };
+
         mtx.lock();
-        std::cout << "[User n. " << userNumber << "] Message:\n";
+        std::cout << "[User number: " << userNumber << "] Message:\n";
         std::cin >> message;
-        std::cout << "[User n. " << userNumber << "] Receiver (if everyone: 0):\n";
+        std::cout << "[User number: " << userNumber << "] Receiver (if everyone: 0):\n";
         std::cin >> receiverNumber;
         mtx.unlock();
 
         buffer = userNumber + receiverNumber + message;
-        send(clientSocket, buffer.c_str(), buffer.length() + 1, 0);
+        send(connectSocket, buffer.c_str(), buffer.length() + 1, 0);
     }
 
-    closesocket(clientSocket);
+    closesocket(connectSocket);
     WSACleanup();
 }
 
