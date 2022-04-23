@@ -45,14 +45,24 @@ int main() {
         
         while (true) {
             for (int i = 0; i < CLIENTS_NUMBER; i++) {
-                char buf[80];
-                if (recv(si[i], buf, 80, 0) > 0) {
-                    if (strcmp(buf, "quit") == 0) {
-                        closesocket(si[i]);
-                        WSACleanup();
-                        return 0;
+                char buffer[80];
+                if (recv(si[i], buffer, 80, 0) > 0) {
+                    char senderNumber = buffer[0];
+                    char receiverNumber = buffer[1];
+                    std::string message(buffer);
+                    message.erase(0, 2);
+                    if (receiverNumber == '0') {
+                        for (int j = 0; j < CLIENTS_NUMBER; j++) {
+                            if (j != i) {
+                                // send(serverSocket, buffer.c_str(), buffer.length() + 1, 0);
+                            }
+                        }
+                        std::cout << "Sent messsage: '" << message << "' From: " << senderNumber << "To: all\n";
                     }
-                    printf("%s\n", buf);
+                    else {
+                        // send(serverSocket, buffer.c_str(), buffer.length() + 1, 0);
+                        std::cout << "Sent messsage: '" << message << "' From: " << senderNumber << " To user n.: " << receiverNumber << "\n";
+                    }
                 };
             }
         }
