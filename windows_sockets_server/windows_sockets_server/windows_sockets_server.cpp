@@ -47,9 +47,11 @@ int main() {
                 if (recv(clientSockets[i], buffer, 80, 0) > 0) {
                     int senderNumber = buffer[0] - '0';
                     int receiverNumber = buffer[1] - '0';
+
                     std::string message(buffer);
                     message.erase(0, 2);
-                    if (receiverNumber == '0') {
+
+                    if (!receiverNumber) {
                         for (int j = 0; j < CLIENTS_NUMBER; j++) {
                             if (j != i) {
                                 send(clientSockets[j], message.c_str(), message.length() + 1, 0);

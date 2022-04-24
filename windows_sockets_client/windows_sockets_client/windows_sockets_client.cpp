@@ -14,7 +14,7 @@
 #define ST_PORT 8080
 #define CLIENTS_NUMBER 3
 
-std::mutex mtx;
+std::mutex mtx, mtx2;
 
 void receive_message(SOCKET* connectSocket, std::string userNumber) {
     while (true) {
@@ -22,7 +22,9 @@ void receive_message(SOCKET* connectSocket, std::string userNumber) {
         ioctlsocket(*connectSocket, FIONBIO, &modeNonBlocking);
         char bufferb[80];
         if (recv(*connectSocket, bufferb, 80, 0) > 0) {
-            std::cout << "[User number: " << userNumber << "] Received message: " << bufferb << "\n";
+            mtx2.lock();
+            std::cout << "I am user number: " << userNumber << " and I received message: '" << bufferb << "'!\n";
+            mtx2.unlock();
         };
         u_long modeBlocking = 0;
         ioctlsocket(*connectSocket, FIONBIO, &modeBlocking);
@@ -49,21 +51,25 @@ void create_client(std::string userNumber) {
         std::cout << "Connection error\n";
     }
     
+    std::thread message_receiver{ receive_message, &connectSocket, userNumber };
+
     std::string buffer;
     std::string message;
     std::string receiverNumber;
-    std::thread message_receiver { receive_message, &connectSocket, userNumber };
     while (true) {
         mtx.lock();
         std::cout << "[User number: " << userNumber << "] Message:\n";
         std::cin >> message;
-        std::cout << "[User number: " << userNumber << "] Receiver (if everyone: 0):\n";
-        std::cin >> receiverNumber;
+        do {
+            std::cout << "[User number: " << userNumber << "] Receiver (if everyone: 0):\n";
+            std::cin >> receiverNumber;
+        } while (!receiverNumber.compare(userNumber));
         mtx.unlock();
 
         buffer = userNumber + receiverNumber + message;
         send(connectSocket, buffer.c_str(), buffer.length() + 1, 0);
     }
+
     message_receiver.join();
 
     closesocket(connectSocket);
