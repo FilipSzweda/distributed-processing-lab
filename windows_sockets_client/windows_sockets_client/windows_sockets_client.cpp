@@ -12,26 +12,31 @@
 #pragma comment(lib,"ws2_32.lib")
 
 #define ST_PORT 8080
-#define CLIENTS_NUMBER 3
+int userNumber = -1;
 
-std::mutex mtx, mtx2;
-
-void receive_message(SOCKET* connectSocket, std::string userNumber) {
+void receive_message(SOCKET* connectSocket) {
     while (true) {
         u_long modeNonBlocking = 1;
         ioctlsocket(*connectSocket, FIONBIO, &modeNonBlocking);
         char bufferb[80];
         if (recv(*connectSocket, bufferb, 80, 0) > 0) {
-            mtx2.lock();
-            std::cout << "I am user number: " << userNumber << " and I received message: '" << bufferb << "'!\n";
-            mtx2.unlock();
+            std::string message (bufferb);
+            if (message.length() == 1 && userNumber == -1) {
+                userNumber = message[0] - '0';
+                std::cout << "You are user number: " << userNumber << "\n";
+            }
+            else {
+                int senderNumber = message[0] - '0';
+                message.erase(0, 1);
+                std::cout << "User: " << senderNumber << " wrote: " << message << "\n";
+            }
         };
         u_long modeBlocking = 0;
         ioctlsocket(*connectSocket, FIONBIO, &modeBlocking);
     }
 }
 
-void create_client(std::string userNumber) {
+void create_client() {
     WSADATA wsas;
     WORD version;
     version = MAKEWORD(2, 0);
@@ -51,22 +56,22 @@ void create_client(std::string userNumber) {
         std::cout << "Connection error\n";
     }
     
-    std::thread message_receiver{ receive_message, &connectSocket, userNumber };
+    std::thread message_receiver{ receive_message, &connectSocket};
 
     std::string buffer;
     std::string message;
     std::string receiverNumber;
     while (true) {
-        mtx.lock();
-        std::cout << "[User number: " << userNumber << "] Message:\n";
+        std::cout << "Write message:\n";
         std::cin >> message;
-        do {
-            std::cout << "[User number: " << userNumber << "] Receiver (if everyone: 0):\n";
+        /*do {
+            std::cout << "To user number (if all: 0):\n";
             std::cin >> receiverNumber;
-        } while (!receiverNumber.compare(userNumber));
-        mtx.unlock();
+        } while (receiverNumber[0] - '0' == userNumber);*/
+        std::cout << "To user number (if all: 0):\n";
+        std::cin >> receiverNumber;
 
-        buffer = userNumber + receiverNumber + message;
+        buffer = receiverNumber + message;
         send(connectSocket, buffer.c_str(), buffer.length() + 1, 0);
     }
 
@@ -77,15 +82,8 @@ void create_client(std::string userNumber) {
 }
 
 int main() {
-    std::thread clients[CLIENTS_NUMBER];
-
-    for (int clientNumber = 0; clientNumber < CLIENTS_NUMBER; clientNumber++) {
-        clients[clientNumber] = std::thread{ create_client, std::to_string(clientNumber + 1) };
-    }
-
-    for (int clientNumber = 0; clientNumber < CLIENTS_NUMBER; clientNumber++) {
-        clients[clientNumber].join();
-    }
+    std::thread client{create_client};
+    client.join();
 
     return 0;
 }

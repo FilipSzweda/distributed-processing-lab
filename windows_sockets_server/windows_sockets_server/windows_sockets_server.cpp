@@ -1,12 +1,13 @@
-#include<io.h>
-#include<iostream>
-#include<stdio.h>
-#include<winsock2.h>
+#include <io.h>
+#include <iostream>
+#include <stdio.h>
+#include <winsock2.h>
+#include <string>
 
 #pragma comment(lib,"ws2_32.lib")
 
 #define ST_PORT 8080
-#define CLIENTS_NUMBER 3
+#define CLIENTS_NUMBER 2
 
 int main() {
     WSADATA wsas;
@@ -39,29 +40,31 @@ int main() {
         lenc = sizeof(sc);
         for (int i = 0; i < CLIENTS_NUMBER; i++) {
             clientSockets[i] = accept(listenSocket, (struct sockaddr FAR*) &sc, &lenc);
+            std::string userNumber = std::to_string(i + 1);
+            send(clientSockets[i], userNumber.c_str(), userNumber.length() + 1, 0);
         }
         
         while (true) {
             for (int i = 0; i < CLIENTS_NUMBER; i++) {
                 char buffer[80];
                 if (recv(clientSockets[i], buffer, 80, 0) > 0) {
-                    int senderNumber = buffer[0] - '0';
-                    int receiverNumber = buffer[1] - '0';
+                    int receiverNumber = buffer[0] - '0';
 
                     std::string message(buffer);
-                    message.erase(0, 2);
+                    message.erase(0, 1);
+                    message.insert(0, std::to_string(i + 1));
 
-                    if (!receiverNumber) {
+                    if (receiverNumber == 0) {
                         for (int j = 0; j < CLIENTS_NUMBER; j++) {
                             if (j != i) {
                                 send(clientSockets[j], message.c_str(), message.length() + 1, 0);
                             }
                         }
-                        std::cout << "Sent messsage: '" << message << "' From: " << senderNumber << " To: all\n";
+                        std::cout << "Sent messsage: '" << message << "' From: " << i + 1 << " To: all\n";
                     }
                     else {
                         send(clientSockets[receiverNumber - 1], message.c_str(), message.length() + 1, 0);
-                        std::cout << "Sent messsage: '" << message << "' From: " << senderNumber << " To user number: " << receiverNumber << "\n";
+                        std::cout << "Sent messsage: '" << message << "' From: " << i + 1 << " To user number: " << receiverNumber << "\n";
                     }
                 };
             }
