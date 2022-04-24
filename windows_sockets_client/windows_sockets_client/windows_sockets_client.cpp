@@ -18,10 +18,14 @@ std::mutex mtx;
 
 void receive_message(SOCKET* connectSocket, std::string userNumber) {
     while (true) {
+        u_long modeNonBlocking = 1;
+        ioctlsocket(*connectSocket, FIONBIO, &modeNonBlocking);
         char bufferb[80];
         if (recv(*connectSocket, bufferb, 80, 0) > 0) {
             std::cout << "[User number: " << userNumber << "] Received message: " << bufferb << "\n";
         };
+        u_long modeBlocking = 0;
+        ioctlsocket(*connectSocket, FIONBIO, &modeBlocking);
     }
 }
 
