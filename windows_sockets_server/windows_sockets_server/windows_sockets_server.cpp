@@ -7,7 +7,7 @@
 #pragma comment(lib,"ws2_32.lib")
 
 #define ST_PORT 8080
-#define CLIENTS_NUMBER 2
+#define CLIENTS_NUMBER 3
 
 int main() {
     WSADATA wsas;
@@ -43,27 +43,29 @@ int main() {
             std::string userNumber = std::to_string(i + 1);
             send(clientSockets[i], userNumber.c_str(), userNumber.length() + 1, 0);
         }
-        
         while (true) {
             for (int i = 0; i < CLIENTS_NUMBER; i++) {
                 char buffer[80];
+                u_long modeNonBlocking = 1;
+                ioctlsocket(clientSockets[i], FIONBIO, &modeNonBlocking);
                 if (recv(clientSockets[i], buffer, 80, 0) > 0) {
-                    int receiverNumber = buffer[0] - '0';
+                    std::string message{ buffer };
 
-                    std::string message(buffer);
+                    int receiverNumber = message[0] - '0';
                     message.erase(0, 1);
-                    message.insert(0, std::to_string(i + 1));
+
+                    std::string newMessage = std::to_string(i + 1) + message;
 
                     if (receiverNumber == 0) {
                         for (int j = 0; j < CLIENTS_NUMBER; j++) {
                             if (j != i) {
-                                send(clientSockets[j], message.c_str(), message.length() + 1, 0);
+                                send(clientSockets[j], newMessage.c_str(), newMessage.length() + 1, 0);
                             }
                         }
                         std::cout << "Sent messsage: '" << message << "' From: " << i + 1 << " To: all\n";
                     }
                     else {
-                        send(clientSockets[receiverNumber - 1], message.c_str(), message.length() + 1, 0);
+                        send(clientSockets[receiverNumber - 1], newMessage.c_str(), newMessage.length() + 1, 0);
                         std::cout << "Sent messsage: '" << message << "' From: " << i + 1 << " To user number: " << receiverNumber << "\n";
                     }
                 };

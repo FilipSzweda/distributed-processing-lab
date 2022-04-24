@@ -64,10 +64,6 @@ void create_client() {
     while (true) {
         std::cout << "Write message:\n";
         std::cin >> message;
-        /*do {
-            std::cout << "To user number (if all: 0):\n";
-            std::cin >> receiverNumber;
-        } while (receiverNumber[0] - '0' == userNumber);*/
         std::cout << "To user number (if all: 0):\n";
         std::cin >> receiverNumber;
 
