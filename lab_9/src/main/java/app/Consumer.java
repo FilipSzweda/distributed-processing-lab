@@ -1,5 +1,6 @@
 package app;
 
+import java.util.Optional;
 import java.util.Random;
 import app.Ware.Type;
 
@@ -23,11 +24,8 @@ public class Consumer implements Runnable {
     public void run() {
         while(!Thread.interrupted()){
             try {
-                Ware consumedWare = this.consume();
-                if(this.warehouse.containsWare(consumedWare)) {
-                    this.warehouse.removeWare(this.id, consumedWare);
-                }
-                Thread.sleep(new Random().nextInt(5000));
+                Thread.sleep(3000 + new Random().nextInt(5000));
+                this.warehouse.access(Optional.empty(), Optional.of(this));
             } catch(InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

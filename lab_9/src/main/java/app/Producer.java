@@ -1,5 +1,6 @@
 package app;
 
+import java.util.Optional;
 import java.util.Random;
 import app.Ware.Type;
 
@@ -16,7 +17,6 @@ public class Producer implements Runnable {
         Random random = new Random();
         Type randomizedType = Type.values()[random.nextInt(Type.values().length)];
         Integer randomizedQuantity = random.nextInt(freeCapacity);
-        System.out.println("Producer ID" + id + " produced: " + randomizedType + " times " + randomizedQuantity);
         return new Ware(randomizedType, randomizedQuantity);
     }
 
@@ -24,12 +24,8 @@ public class Producer implements Runnable {
     public void run() {
         while(!Thread.interrupted()){
             try {
-                Integer freeCapacity = this.warehouse.getFreeCapacity();
-                if(freeCapacity > 0) {
-                    Ware producedWare = this.produce(freeCapacity);
-                    this.warehouse.addWare(producedWare);
-                }
                 Thread.sleep(3000 + new Random().nextInt(5000));
+                this.warehouse.access(Optional.of(this), Optional.empty());
             } catch(InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
