@@ -5,7 +5,7 @@ public class Ware {
     Integer quantity;
 
     public enum Type {
-        Type_A, Type_B, Type_C, Type_D, Type_E, Type_F, Type_G;
+        Type_A, Type_B, Type_C, Type_D, Type_E, Type_F, Type_G
     }
 
     public Ware(Type type, Integer quantity) {
@@ -17,5 +17,7 @@ public class Ware {
         return type;
     }
 
-    public Integer getQuantity() { return quantity; }
+    public Integer getQuantity() {
+        return quantity;
+    }
 }

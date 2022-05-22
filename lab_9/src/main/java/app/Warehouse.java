@@ -5,20 +5,18 @@ import java.util.List;
 import java.util.Optional;
 
 public class Warehouse {
-    Integer capacity;
-    List<Ware> wares = new ArrayList<>();;
+    Integer totalCapacity;
+    List<Ware> wares = new ArrayList<>();
 
-    public Warehouse(Integer capacity) {
-        this.capacity = capacity;
+    public Warehouse(Integer totalCapacity) {
+        this.totalCapacity = totalCapacity;
     }
 
     public synchronized void access(Optional<Producer> producer, Optional<Consumer> consumer) {
         if(producer.isPresent()) {
             this.producerAccess(producer.get());
         }
-        else if (consumer.isPresent()) {
-            this.consumerAccess(consumer.get());
-        }
+        else consumer.ifPresent(this::consumerAccess);
     }
 
     public void consumerAccess(Consumer consumer) {
@@ -73,7 +71,7 @@ public class Warehouse {
     }
 
     public boolean containsWare(final Ware ware) {
-        return this.wares.stream().filter(w -> w.getType().equals(ware.type)).findFirst().isPresent();
+        return this.wares.stream().anyMatch(w -> w.getType().equals(ware.type));
     }
 
     public Integer getTakenCapacity() {
@@ -85,6 +83,6 @@ public class Warehouse {
     }
 
     public Integer getFreeCapacity() {
-        return this.capacity - this.getTakenCapacity();
+        return this.totalCapacity - this.getTakenCapacity();
     }
 }
