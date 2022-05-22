@@ -16,4 +16,6 @@ public class Ware {
     public Type getType() {
         return type;
     }
+
+    public Integer getQuantity() { return quantity; }
 }

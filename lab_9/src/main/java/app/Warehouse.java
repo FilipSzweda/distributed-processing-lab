@@ -1,39 +1,40 @@
 package app;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Warehouse {
     Integer capacity;
-    List<Ware> wares;
+    List<Ware> wares = new ArrayList<>();;
 
-    public Warehouse(List<Ware> wares) {
+    public Warehouse(Integer capacity) {
         this.capacity = capacity;
-        this.wares = wares;
     }
 
     public void addWare(Ware addedWare) {
         if(this.containsWare(addedWare)) {
-            for (Ware ware : wares) {
+            for (Ware ware : this.wares) {
                 if(ware.type == addedWare.type) {
-                    this.capacity += addedWare.quantity;
                     ware.quantity += addedWare.quantity;
                     break;
                 }
             }
         } else {
-            wares.add(addedWare);
+            this.wares.add(addedWare);
         }
     }
 
-    public void removeWare(Ware removedWare) {
+    public void removeWare(Integer id, Ware removedWare) {
         if(containsWare(removedWare)) {
-            for (Ware ware : wares) {
+            for (Ware ware : this.wares) {
                 if(ware.type == removedWare.type) {
                     if(removedWare.quantity > ware.quantity) {
-                        this.capacity -= ware.quantity;
+                        System.out.println("Consumer ID" + id + " consumed: " + ware.getType()
+                                + " times " + ware.getQuantity());
                         ware.quantity = 0;
                     } else {
-                        this.capacity -= removedWare.quantity;
+                        System.out.println("Consumer ID" + id + " consumed: " + removedWare.getType()
+                                + " times " + removedWare.getQuantity());
                         ware.quantity -= removedWare.quantity;
                     }
                     break;
@@ -42,7 +43,19 @@ public class Warehouse {
         }
     }
 
-    public boolean containsWare(final Ware ware){
-        return wares.stream().filter(w -> w.getType().equals(ware.type)).findFirst().isPresent();
+    public boolean containsWare(final Ware ware) {
+        return this.wares.stream().filter(w -> w.getType().equals(ware.type)).findFirst().isPresent();
+    }
+
+    public Integer getTakenCapacity() {
+        Integer takenCapacity = 0;
+        for (Ware ware : this.wares) {
+            takenCapacity += ware.quantity;
+        }
+        return takenCapacity;
+    }
+
+    public Integer getFreeCapacity() {
+        return this.capacity - this.getTakenCapacity();
     }
 }
