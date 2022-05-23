@@ -25,7 +25,23 @@ public class Producer implements Runnable {
         while(!Thread.interrupted()){
             try {
                 Thread.sleep(3000 + new Random().nextInt(5000));
-                this.warehouse.access(Optional.of(this), Optional.empty());
+                synchronized (this.warehouse) {
+                    if (this.warehouse.getFreeCapacity() - 1 > 0) {
+                        this.warehouse.access(Optional.of(this), Optional.empty());
+                        this.warehouse.notifyAll();
+                    }
+                    else {
+                        try {
+                            while(!(this.warehouse.getFreeCapacity() - 1 > 0)) {
+                                System.out.println("Producer ID " + this.id + " is waiting for free warehouse capacity");
+                                this.warehouse.wait();
+                            }
+                        } catch (InterruptedException exception) {
+                            exception.printStackTrace();
+                        }
+                        this.warehouse.notifyAll();
+                    }
+                }
             } catch(InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

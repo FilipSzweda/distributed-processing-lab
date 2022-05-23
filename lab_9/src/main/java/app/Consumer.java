@@ -16,7 +16,7 @@ public class Consumer implements Runnable {
     public Ware consume() {
         Random random = new Random();
         Type randomizedType = Type.values()[random.nextInt(Type.values().length)];
-        Integer randomizedQuantity = random.nextInt(this.warehouse.getTakenCapacity());
+        Integer randomizedQuantity = random.nextInt(this.warehouse.getTotalCapacity() / 10);
         return new Ware(randomizedType, randomizedQuantity);
     }
 
@@ -25,7 +25,23 @@ public class Consumer implements Runnable {
         while(!Thread.interrupted()){
             try {
                 Thread.sleep(3000 + new Random().nextInt(5000));
-                this.warehouse.access(Optional.empty(), Optional.of(this));
+                Ware consumedWare = this.consume();
+                synchronized (this.warehouse) {
+                    if(this.warehouse.containsWare(consumedWare)) {
+                        this.warehouse.access(Optional.empty(), Optional.of(this));
+                        this.warehouse.notifyAll();
+                    } else {
+                        try {
+                            while(!this.warehouse.containsWare(consumedWare)) {
+                                System.out.println("Consumer ID " + this.id + " is waiting for ware " + consumedWare.getType());
+                                this.warehouse.wait();
+                            }
+                        } catch (InterruptedException exception) {
+                            exception.printStackTrace();
+                        }
+                        this.warehouse.notifyAll();
+                    }
+                }
             } catch(InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

@@ -28,10 +28,8 @@ public class Warehouse {
 
     public void producerAccess(Producer producer) {
         Integer freeCapacity = this.getFreeCapacity();
-        if(freeCapacity > 0) {
-            Ware producedWare = producer.produce(freeCapacity);
-            this.addWare(producer.id, producedWare);
-        }
+        Ware producedWare = producer.produce(freeCapacity);
+        this.addWare(producer.id, producedWare);
     }
 
     public void addWare(Integer id, Ware addedWare) {
@@ -84,5 +82,9 @@ public class Warehouse {
 
     public Integer getFreeCapacity() {
         return this.totalCapacity - this.getTakenCapacity();
+    }
+
+    public Integer getTotalCapacity() {
+        return totalCapacity;
     }
 }
